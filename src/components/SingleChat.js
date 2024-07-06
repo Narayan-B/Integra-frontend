@@ -12,15 +12,17 @@ export default function SingleChat() {
   const [connections, setConnections] = useState([]);
   const [receiverId, setReceiverId] = useState('');
   const navigate = useNavigate();
-  //user data
+  // User data
   const { data } = useContext(UserContext);
 
-  const socket = useMemo(() => io("http://localhost:3330"), []);
+  // Socket connection
+  const socket = useMemo(() => io("http://localhost:3250"), []);
 
   useEffect(() => {
-    (async () => {
+    // Fetch user connections
+    const fetchConnections = async () => {
       try {
-        const response = await axios.get('http://localhost:3330/api/users', {
+        const response = await axios.get('http://localhost:3250/api/users', {
           headers: {
             Authorization: localStorage.getItem('token')
           }
@@ -29,30 +31,32 @@ export default function SingleChat() {
       } catch (err) {
         alert(err.message);
       }
-    })();
+    };
 
-    (async () => {
+    // Fetch initial messages
+    const fetchMessages = async () => {
       try {
-        const response = await axios.get('http://localhost:3330/api/users/messages', {
+        const response = await axios.get('http://localhost:3250/api/users/messages', {
           headers: {
             Authorization: localStorage.getItem('token')
           }
         });
-        console.log(response.data);
         setMessages(response.data);
       } catch (err) {
         alert(err.message);
       }
-    })();
+    };
 
-    //to join first time
+    fetchConnections();
+    fetchMessages();
+
+    // Join socket room on connect
     socket.on('connect', () => {
       socket.emit('join', { roomId: data.user._id });
     });
 
-    //to handle received message
+    // Handle incoming messages
     socket.on('receive_message', (data) => {
-      console.log(data, 'received');
       setMessages((prevMessages) => [...prevMessages, data]);
     });
 
@@ -61,6 +65,7 @@ export default function SingleChat() {
     };
   }, [socket, data.user._id]);
 
+  // Handle sending message
   const handleSend = (e) => {
     e.preventDefault();
     const msg = { receiverId, senderId: data.user._id, message, room: `${receiverId}${data.user._id}` };
@@ -69,17 +74,18 @@ export default function SingleChat() {
     setMessage('');
   };
 
+  // Navigate to group chat
   const handleGroup = () => {
     navigate('/groupChat');
   };
 
+  // Handle selecting a user to chat with
   const handleButtonUser = (e, id) => {
     e.preventDefault();
     e.stopPropagation();
     setReceiverId(id);
   };
 
-  console.log(msgs, 'messages');
   return (
     <div>
       <Form className='form-control'>
@@ -88,20 +94,18 @@ export default function SingleChat() {
           <Col className="col-md-4">
             <Form.Label column sm={2}>
               {
-                connections.map((ele) => {
-                  return (
-                    <Card
-                      style={{ width: '15rem', height: "3rem", textAlign: "center" }}
-                      key={ele._id}
-                      onClick={(e) => handleButtonUser(e, ele._id)}
-                    >
-                      {ele.name}
-                    </Card>
-                  );
-                })
+                connections.map((ele) => (
+                  <Card
+                    key={ele._id}
+                    style={{ width: '15rem', height: "3rem", textAlign: "center", marginBottom: "10px", cursor: "pointer" }}
+                    onClick={(e) => handleButtonUser(e, ele._id)}
+                  >
+                    {ele.name}
+                  </Card>
+                ))
               }
               <Card
-                style={{ width: '15rem', height: "3rem", textAlign: "center", background: "coral" }}
+                style={{ width: '15rem', height: "3rem", textAlign: "center", background: "coral", cursor: "pointer" }}
                 onClick={handleGroup}
               >
                 For Groups
@@ -122,8 +126,7 @@ export default function SingleChat() {
                     width: "fit-content",
                     maxWidth: "70%",
                     color: "white",
-                    textAlign: "left",
-                    alignSelf: isSender ? "flex-end" : "flex-start",
+                    textAlign: isSender ? "right" : "left", // Adjusted alignment based on sender/receiver
                   }}
                 >
                   {ele.message}
@@ -135,10 +138,10 @@ export default function SingleChat() {
               style={{ margin: "10px" }}
               as="textarea"
               value={message}
-              placeholder="message"
+              placeholder="Type your message here..."
               onChange={(e) => setMessage(e.target.value)}
             />
-            <Button style={{ width: "20%" }} variant="primary" type="submit" onClick={handleSend}>
+            <Button style={{ width: "20%", marginTop: "10px" }} variant="primary" type="submit" onClick={handleSend}>
               Send
             </Button>
           </Col>

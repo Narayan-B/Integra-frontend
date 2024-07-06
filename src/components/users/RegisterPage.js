@@ -29,7 +29,7 @@ export default function Register(){
                 password
                } 
                try{
-                const response = await axios.post('http://localhost:3330/api/users/register',form)
+                const response = await axios.post('http://localhost:3250/api/users/register',form)
                 console.log(response?.data)
                 setFormErrors({})
                 setServerErrors({})

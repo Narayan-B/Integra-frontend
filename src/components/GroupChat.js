@@ -8,7 +8,7 @@ import { UserContext } from '../createContext/userContext'
 import { useNavigate } from "react-router-dom";
 export default function GroupChat() {
 
-    const socket = useMemo(() => io("http://localhost:3330"), [])
+    const socket = useMemo(() => io("http://localhost:3250"), [])
 
     const [modal, setModal] = useState(false);
     const [message, setMessage] = useState('')
@@ -29,7 +29,7 @@ export default function GroupChat() {
     useEffect(() => {
         (async () => {
             try {
-                const response = await axios.get('http://localhost:3330/api/groups', {
+                const response = await axios.get('http://localhost:3250/api/groups', {
                     headers: {
                         Authorization: localStorage.getItem('token')
                     }
@@ -61,7 +61,7 @@ export default function GroupChat() {
         setGroupName('')
 
         try {
-            const response = await axios.post('http://127.0.0.1:3330/api/groups', form, {
+            const response = await axios.post('http://localhost:3250/api/groups', form, {
                 headers: {
                     Authorization: localStorage.getItem('token')
                 }
@@ -78,7 +78,7 @@ export default function GroupChat() {
     const handleJoin = async (e, user, id) => {
         const form = { user: user }
         try {
-            const response = await axios.put(`http://localhost:3330/api/groups/${id}`, form, {
+            const response = await axios.put(`http://localhost:3250/api/groups/${id}`, form, {
                 headers: { Authorization: localStorage.getItem("token") }
             })
             console.log(response.data)
@@ -109,7 +109,7 @@ export default function GroupChat() {
         e.stopPropagation()
         setGroupId(id)
         try {
-            const response = await axios.get(`http://localhost:3330/api/users/groupMessages/${id}`, {
+            const response = await axios.get(`http://localhost:3250/api/users/groupMessages/${id}`, {
               headers: {
                 Authorization: localStorage.getItem('token')
               }

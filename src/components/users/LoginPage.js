@@ -30,7 +30,7 @@ export default function Login(){
                 password
             }
             try{
-            const response = await axios.post('http://localhost:3330/api/users/login',form)
+            const response = await axios.post('http://localhost:3250/api/users/login',form)
                     console.log(response.data)
                     dispatch({type:'ADD_USER',payload:response.data.user})
                     dispatch({type:"LOGIN"})
